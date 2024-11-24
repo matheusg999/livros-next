@@ -3,42 +3,39 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { Menu } from '../componentes/Menu';
 import { useRouter } from 'next/router';
-import {ControleEditora} from '../classes/controle/ControleEditora';
+import { ControleEditora } from '../classes/controle/ControleEditora';
+import { ControleLivro } from '../classes/controle/ControleLivros'; 
 import { Livro } from '../classes/modelo/Livro';
 
-
+const controleLivros = new ControleLivro(); 
 const controleEditora = new ControleEditora();
-const baseURL = "http://localhost:3000/api/livros";
 
 export const LivroDados: React.FC = () => {
     const [titulo, setTitulo] = useState('');
     const [resumo, setResumo] = useState('');
     const [autores, setAutores] = useState('');
     const [codEditora, setCodEditora] = useState(0);
+    
     const opcoes = controleEditora.getEditoras().map(editora => ({
         value: editora.codEditora,
         text: editora.nome,
     }));
+
     const router = useRouter();
 
-    const incluirLivro = async (livro: Livro) => {
-        const response = await fetch(baseURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(livro),
+   
+    const incluir = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const livro = new Livro(codEditora, titulo, resumo, autores.split('\n'), '');
+        controleLivros.incluir(livro).then(() => {
+            
+            router.push('/LivroLista');
         });
-        return response.ok;
     };
 
     const tratarCombo = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setCodEditora(Number(event.target.value));
-    };
-
-    const incluir = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const livro = { codigo: 0, titulo, resumo, autores: autores.split('\n'), codEditora };
-        const sucesso = await incluirLivro(livro);
-        if (sucesso) router.push('/LivroLista');
     };
 
     return (

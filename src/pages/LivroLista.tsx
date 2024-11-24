@@ -3,78 +3,88 @@
 import styles from './styles.module.css'; 
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { Menu } from '../componentes/Menu';
-import { LinhaLivro } from '../componentes/LinhaLivro';
+import { ControleLivro } from '../classes/controle/ControleLivros'; 
+import { ControleEditora } from '../classes/controle/ControleEditora';
 import { Livro } from '../classes/modelo/Livro'; 
 
-const baseURL = 'http://localhost:3000/api/livros';
 
+const controleLivros = new ControleLivro();
+const controleEditora = new ControleEditora();
+
+const LinhaLivro = (props: { livro: Livro; excluir: (id: string) => void }) => {
+    const { livro, excluir } = props;
+    const nomeEditora = controleEditora.getNomeEditora(livro.codEditora);
+
+    return (
+        <tr>
+            <td>
+                <div className="d-flex flex-column">
+                    <strong>{livro.titulo}</strong>
+                    <button 
+                        onClick={() => livro._id && excluir(livro._id)} 
+                        className="btn btn-danger mt-2" 
+                    >
+                        Excluir
+                    </button>
+                </div>
+            </td>
+            <td>{livro.resumo}</td>
+            <td>{nomeEditora}</td>
+            <td>
+                <ul className="list-unstyled">
+                    {livro.autores.map((autor, index) => (
+                        <li key={index}>{autor}</li>
+                    ))}
+                </ul>
+            </td>
+        </tr>
+    );
+};
+  
 const LivroLista = () => {
-    const [livros, setLivros] = useState<Array<Livro>>([]);
-    const [carregado, setCarregado] = useState<boolean>(false);
-
-    const obterLivros = async () => {
-        const response = await fetch(baseURL);
-        const data = await response.json();
-        return data;
-    };
-
-    const excluirLivro = async (codigo: number) => {
-        const response = await fetch(`${baseURL}/${codigo}`, {
-            method: 'DELETE',
-        });
-        return response.ok;
-    };
+    const [livros, setLivros] = useState<Livro[]>([]);
+    const [carregado, setCarregado] = useState(false);
 
     useEffect(() => {
-        obterLivros().then((data) => {
-            setLivros(data);
-            setCarregado(true);
-        });
-    }, []);
-
-    const excluir = async (codigo: number) => {
-        const sucesso = await excluirLivro(codigo);
-        if (sucesso) {
-            setLivros(livros.filter((livro) => livro.codigo !== codigo));
+        if (!carregado) {
+            controleLivros.obterLivros().then((dados) => {
+                setLivros(dados);
+                setCarregado(true);
+            });
         }
+    }, [carregado]);
+
+    const excluir = (id: string) => {
+        controleLivros.excluir(id).then(() => {
+            setCarregado(false); 
+        });
     };
 
     return (
-        <div className={styles.container}>
-            <Head>
-                <title>Lista de Livros</title>
-            </Head>
-            <Menu />
-            <main className={styles.main}>
-                <h1 className={styles.title}>Lista de Livros</h1>
-                {carregado ? (
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Título</th>
-                                <th>Resumo</th>
-                                <th>Editora</th>
-                                <th>Autores</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {livros.map((livro) => (
-                                <LinhaLivro 
-                                    key={livro.codigo} 
-                                    livro={livro} 
-                                    excluir={excluir} 
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p>Carregando livros...</p>
-                )}
-            </main>
-        </div>
+        <main className="container my-4">
+            <h1 className="mb-4">Catálogo de Livros</h1>
+            <table className="table table-striped table-bordered table-hover">
+                <thead className="table-dark">
+                    <tr>
+                        <th className="col-2">Título</th>
+                        <th className="col-6">Resumo</th>
+                        <th className="col-2">Editora</th>
+                        <th className="col-2">Autores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {livros.map((livro) => (
+                        <LinhaLivro
+                            key={livro._id || Math.random()} 
+                            livro={livro}
+                            excluir={excluir}
+                        />
+                    ))}
+                </tbody>
+            </table>
+        </main>
     );
 };
-
-export default LivroLista;
+  
+  export default LivroLista;
+  

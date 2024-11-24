@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ControleLivros } from '../../../classes/controle/ControleLivros'; // Ajuste o caminho conforme necessário
+import { ControleLivro } from '../../../../../livros-react/src/controle/ControleLivros';
 
-const controleLivro = new ControleLivros();
+const controleLivro = new ControleLivro();
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === 'GET') {

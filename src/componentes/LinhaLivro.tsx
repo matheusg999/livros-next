@@ -6,7 +6,7 @@ const controleEditora = new ControleEditora();
 
 interface LinhaLivroProps {
     livro: Livro;
-    excluir: (codigo: number) => void; // Método para exclusão
+    excluir: (codigo: number) => void; 
 }
 
 
@@ -20,8 +20,8 @@ export const LinhaLivro: React.FC<LinhaLivroProps> = (props) => {
                 <div className="d-flex flex-column">
                     <strong>{livro.titulo}</strong>
                     <button 
-                        onClick={() => excluir(livro.codigo)} 
-                        className="btn btn-danger mt-2" // Classes do Bootstrap
+                        onClick={() => excluir(livro.codEditora)} 
+                        className="btn btn-danger mt-2" 
                     >
                         Excluir
                     </button>
